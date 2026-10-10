@@ -9,6 +9,7 @@
   const runningList = document.getElementById("running-app-list");
   const runningSection = document.getElementById("running-apps-section");
   const loading = document.getElementById("loading");
+  const emptySearch = document.getElementById("empty-search");
   const appCount = document.getElementById("app-count");
   const batchSize = 60;
   let requestId = 0;
@@ -159,6 +160,7 @@
 
     appList.replaceChildren();
     runningList.replaceChildren();
+    emptySearch.hidden = apps.length !== 0 || !searchInput.value.trim();
     const running = apps.filter(app => app.isRunning);
     runningSection.style.display = running.length ? "block" : "none";
     appendCards(runningList, running);
