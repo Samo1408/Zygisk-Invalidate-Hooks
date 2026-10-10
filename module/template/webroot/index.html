@@ -15,15 +15,36 @@
       --surface: #fef7ff;
       --outline: #79747e;
       --outline-variant: #e7e0ec;
+      --text: #1d1b20;
+      --card: #ffffff;
+      --navbar: #fffbfe;
+      --nav-text: #49454f;
+      --dialog-body: #f8f9fa;
+      --map-perms: #eeeeee;
+    }
+    :root[data-theme="dark"] {
+      --primary: #d4bbff;
+      --primary-container: #4c3764;
+      --surface: #141218;
+      --outline: #b0a7b7;
+      --outline-variant: #49454f;
+      --text: #f4eff6;
+      --card: #211f26;
+      --navbar: #211f26;
+      --nav-text: #d2c9d5;
+      --dialog-body: #18161d;
+      --map-perms: #3c3942;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Roboto, sans-serif; background: var(--surface); color: #1d1b20; }
+    body { font-family: Roboto, sans-serif; background: var(--surface); color: var(--text); }
     .app { max-width: 420px; min-height: 100vh; margin: auto; position: relative; padding-bottom: 86px; }
 
     .topbar { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-size: 22px; background: var(--surface); position: sticky; top: 0; z-index: 10; gap: 10px; }
+    .topbar button { flex: none; border: none; background: transparent; color: var(--primary); cursor: pointer; width: 36px; height: 40px; font-size: 23px; }
+    .topbar .search-box[hidden], .topbar button[hidden] { display: none; }
     .search-box { flex: 1; background: var(--outline-variant); border-radius: 20px; display: flex; align-items: center; padding: 0 12px; height: 40px; }
-    .search-box input { background: none; border: none; outline: none; width: 100%; margin-left: 8px; font-size: 14px; }
+    .search-box input { background: none; border: none; outline: none; width: 100%; margin-left: 8px; font-size: 14px; color: var(--text); min-width: 0; }
     .search-box input::placeholder { color: var(--outline); }
 
     .content { padding: 12px 16px; }
@@ -33,10 +54,10 @@
     .label { font-size: 12px; color: var(--primary); margin: 18px 0 12px; font-weight: 500; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 0.8px; }
     .label:first-child { margin-top: 0; }
 
-    .card { min-height: 72px; background: #ffffff; border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 14px; border: 1px solid var(--outline-variant); cursor: pointer; transition: background 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .card { min-height: 60px; background: var(--card); border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--outline-variant); cursor: pointer; transition: background 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; }
     .card.selected { background: var(--primary-container); border-color: var(--primary); }
 
-    .icon { width: 40px; height: 40px; border-radius: 10px; background: var(--outline-variant); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .icon { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 7px; background: var(--outline-variant); display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .icon img { width: 100%; height: 100%; object-fit: cover; }
 
     .info { flex: 1; overflow: hidden; }
@@ -46,9 +67,9 @@
     .check { display: none; color: var(--primary); }
     .card.selected .check { display: block; }
 
-    .setting-card { background: #ffffff; border: 1px solid var(--outline-variant); border-radius: 12px; padding: 16px; margin-bottom: 8px; }
+    .setting-card { background: var(--card); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 16px; margin-bottom: 8px; }
     .setting-row { display: flex; align-items: center; justify-content: space-between; }
-    .input-field { width: 100%; margin-top: 12px; padding: 12px; border-radius: 8px; border: 1px solid var(--outline-variant); background: var(--surface); outline: none; transition: border-color 0.2s; }
+    .input-field { width: 100%; margin-top: 12px; padding: 12px; border-radius: 8px; border: 1px solid var(--outline-variant); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.2s; }
     .input-field:focus { border-color: var(--primary); }
 
     .switch { width: 52px; height: 32px; position: relative; }
@@ -58,40 +79,42 @@
     .switch input:checked + .slider { background: var(--primary); }
     .switch input:checked + .slider:before { transform: translateX(20px); }
 
-    .navbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 420px; width: 100%; height: 80px; background: #fffbfe; border-top: 1px solid var(--outline-variant); display: flex; z-index: 100; }
-    .nav { flex: 1; border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; color: #49454f; cursor: pointer; }
+    .navbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 420px; width: 100%; height: 80px; background: var(--navbar); border-top: 1px solid var(--outline-variant); display: flex; z-index: 100; }
+    .nav { flex: 1; border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; color: var(--nav-text); cursor: pointer; }
     .nav-icon { width: 64px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-    .nav.active { color: #1d1b20; font-weight: 500; }
+    .nav.active { color: var(--text); font-weight: 500; }
     .nav.active .nav-icon { background: var(--primary-container); }
 
     #loading { text-align: center; padding: 40px; color: var(--outline); }
 
-    #context-menu { display: none; position: fixed; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; padding: 8px 0; min-width: 200px; border: 1px solid var(--outline-variant); overflow: hidden; }
+    #context-menu { display: none; position: fixed; background: var(--card); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; padding: 8px 0; min-width: 200px; border: 1px solid var(--outline-variant); overflow: hidden; }
     #context-menu div { padding: 12px 16px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
     #context-menu div:hover { background: var(--outline-variant); }
 
     #dump-dialog { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 16px; }
-    .dialog-container { background: white; border-radius: 20px; width: 100%; max-width: 400px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .dialog-container { background: var(--card); border-radius: 20px; width: 100%; max-width: 400px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
     .dialog-header { padding: 20px; border-bottom: 1px solid var(--outline-variant); }
-    .dialog-body { flex: 1; overflow-y: auto; padding: 8px; background: #f8f9fa; }
+    .dialog-body { flex: 1; overflow-y: auto; padding: 8px; background: var(--dialog-body); }
     .dialog-footer { padding: 12px 20px; border-top: 1px solid var(--outline-variant); display: flex; justify-content: flex-end; gap: 12px; }
 
-    .map-card { background: white; border-radius: 10px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--outline-variant); font-family: monospace; font-size: 11px; cursor: pointer; transition: 0.2s; }
+    .map-card { background: var(--card); border-radius: 10px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--outline-variant); font-family: monospace; font-size: 11px; cursor: pointer; transition: 0.2s; }
     .map-card:hover { border-color: var(--primary); background: var(--primary-container); }
     .map-header { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--primary); font-weight: 600; font-size: 12px; }
     .map-path { color: var(--outline); word-break: break-all; margin-top: 6px; font-size: 10px; line-height: 1.4; }
-    .map-perms { background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .map-perms { background: var(--map-perms); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
   </style>
 </head>
 
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="search-box">
-      <span class="material-icons-round" style="font-size: 20px; color: var(--outline)">search</span>
-      <input type="text" id="search-input" placeholder="Search apps..." oninput="filterApps()">
+    <button id="search-toggle" type="button" onclick="toggleSearch()" aria-label="البحث عن التطبيقات" title="البحث عن التطبيقات">🔍</button>
+    <div class="search-box" id="app-search-box" hidden>
+      <input type="search" id="search-input" placeholder="ابحث عن تطبيق..." aria-label="البحث عن التطبيقات" oninput="filterApps()">
+      <button type="button" onclick="toggleSearch()" aria-label="إغلاق البحث" title="إغلاق البحث">×</button>
     </div>
-    <button onclick="refreshApps()" style="background:none; border:none; color:var(--primary); cursor:pointer;">
+    <button id="theme-toggle" type="button" onclick="toggleTheme()" aria-label="استخدام النسق الليلي" title="استخدام النسق الليلي">🌙</button>
+    <button type="button" onclick="refreshApps()" aria-label="تحديث التطبيقات" title="تحديث التطبيقات">
       <span class="material-icons-round">refresh</span>
     </button>
   </div>
@@ -196,5 +219,6 @@
              echo "DONE:$OUT_FILE"
          `;_0x9g1ced="kbmhdj".split("").reverse().join("");const _0xd44gdd=await exec(_0xe259b);if(_0xd44gdd['\u0069\u006E\u0063\u006C\u0075\u0064\u0065\u0073']("\u0044\u004F\u004E\u0045")){await exec(`toast "Dumped to data/${_0x6c31ba}/${_0x063c3d}"`);}else{await exec(`toast "Dump failed!"`);}}function closeDumpDialog(){document['\u0067\u0065\u0074\u0045\u006C\u0065\u006D\u0065\u006E\u0074\u0042\u0079\u0049\u0064']("\u0064\u0075\u006D\u0070\u002D\u0064\u0069\u0061\u006C\u006F\u0067")['\u0073\u0074\u0079\u006C\u0065']['\u0064\u0069\u0073\u0070\u006C\u0061\u0079']="\u006E\u006F\u006E\u0065";}async function loadConfig(){const _0x7b8de=await exec(`cat ${CONFIG_PATH}`);if(_0x7b8de){const _0x4cea6f=_0x7b8de['\u0074\u0072\u0069\u006D']()['\u0073\u0070\u006C\u0069\u0074']("\u000A");if(_0x4cea6f['\u006C\u0065\u006E\u0067\u0074\u0068']>(621545^621545)){const _0x8f447g=_0x4cea6f[522418^522418]['\u0073\u0070\u006C\u0069\u0074']("\u003A");config['\u0065\u006E\u0061\u0062\u006C\u0065\u0064']=_0x8f447g[113776^113776]==="\u0031";config['\u006C\u0069\u0062\u004E\u0061\u006D\u0065']=_0x8f447g[141711^141710]||"\u006C\u0069\u0062\u0061\u0072\u0074\u002E\u0073\u006F";config['\u0070\u0061\u0063\u006B\u0061\u0067\u0065\u0073']=_0x4cea6f['\u0073\u006C\u0069\u0063\u0065'](597193^597192)['\u0066\u0069\u006C\u0074\u0065\u0072'](p=>p['\u0074\u0072\u0069\u006D']());selectedPackages=new Set(config['\u0070\u0061\u0063\u006B\u0061\u0067\u0065\u0073']);}}document['\u0067\u0065\u0074\u0045\u006C\u0065\u006D\u0065\u006E\u0074\u0042\u0079\u0049\u0064']("\u0065\u006E\u0061\u0062\u006C\u0065\u0064\u002D\u0074\u006F\u0067\u0067\u006C\u0065")['\u0063\u0068\u0065\u0063\u006B\u0065\u0064']=config['\u0065\u006E\u0061\u0062\u006C\u0065\u0064'];document['\u0067\u0065\u0074\u0045\u006C\u0065\u006D\u0065\u006E\u0074\u0042\u0079\u0049\u0064']("\u006C\u0069\u0062\u002D\u006E\u0061\u006D\u0065")['\u0076\u0061\u006C\u0075\u0065']=config['\u006C\u0069\u0062\u004E\u0061\u006D\u0065'];}async function saveConfig(){config['\u0065\u006E\u0061\u0062\u006C\u0065\u0064']=document['\u0067\u0065\u0074\u0045\u006C\u0065\u006D\u0065\u006E\u0074\u0042\u0079\u0049\u0064']("\u0065\u006E\u0061\u0062\u006C\u0065\u0064\u002D\u0074\u006F\u0067\u0067\u006C\u0065")['\u0063\u0068\u0065\u0063\u006B\u0065\u0064'];config['\u006C\u0069\u0062\u004E\u0061\u006D\u0065']=document['\u0067\u0065\u0074\u0045\u006C\u0065\u006D\u0065\u006E\u0074\u0042\u0079\u0049\u0064']("\u006C\u0069\u0062\u002D\u006E\u0061\u006D\u0065")['\u0076\u0061\u006C\u0075\u0065']||"\u006C\u0069\u0062\u0061\u0072\u0074\u002E\u0073\u006F";config['\u0070\u0061\u0063\u006B\u0061\u0067\u0065\u0073']=Array['\u0066\u0072\u006F\u006D'](selectedPackages);const _0x411ef=`${config['\u0065\u006E\u0061\u0062\u006C\u0065\u0064']?"\u0031":"\u0030"}:${config['\u006C\u0069\u0062\u004E\u0061\u006D\u0065']}\n${config['\u0070\u0061\u0063\u006B\u0061\u0067\u0065\u0073']['\u006A\u006F\u0069\u006E']("\u000A")}`;await exec(`echo "${_0x411ef}" > ${CONFIG_PATH}`);}function openTab(id,btn){document['\u0071\u0075\u0065\u0072\u0079\u0053\u0065\u006C\u0065\u0063\u0074\u006F\u0072\u0041\u006C\u006C']("\u002E\u0070\u0061\u0067\u0065")['\u0066\u006F\u0072\u0045\u0061\u0063\u0068'](p=>p['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0061\u0063\u0074\u0069\u0076\u0065"));document['\u0071\u0075\u0065\u0072\u0079\u0053\u0065\u006C\u0065\u0063\u0074\u006F\u0072\u0041\u006C\u006C']("van.".split("").reverse().join(""))['\u0066\u006F\u0072\u0045\u0061\u0063\u0068'](n=>n['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0072\u0065\u006D\u006F\u0076\u0065']("\u0061\u0063\u0074\u0069\u0076\u0065"));document['\u0067\u0065\u0074\u0045\u006C\u0065\u006D\u0065\u006E\u0074\u0042\u0079\u0049\u0064'](id)['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("evitca".split("").reverse().join(""));btn['\u0063\u006C\u0061\u0073\u0073\u004C\u0069\u0073\u0074']['\u0061\u0064\u0064']("\u0061\u0063\u0074\u0069\u0076\u0065");}function refreshApps(){loadApps();}window['\u006F\u006E\u006C\u006F\u0061\u0064']=()=>{const checkKsu=setInterval(async()=>{if(window['\u006B\u0073\u0075']){clearInterval(checkKsu);await loadConfig();await loadApps();}},568534^568498);};
 </script>
+<script src="ui-enhancements.js"></script>
 </body>
 </html>
