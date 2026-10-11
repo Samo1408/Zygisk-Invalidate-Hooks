@@ -1,14 +1,10 @@
-DevicePreset companion app integration
-======================================
+DevicePreset / inline_hook_spoof integration
 
-Module ID / install path: inline_hook_spoof
-Display name: DevicePreset
-Shared property file: /data/adb/modules/inline_hook_spoof/config/device.prop
-Editable source profile: /data/adb/modules/inline_hook_spoof/config/devicepreset-profile.json
-
-The companion app writes both files atomically after verifying module.prop exists and the module is enabled.
-post-fs-data.sh consumes config/device.prop through resetprop-rs --if-diff.
-The app reloads devicepreset-profile.json on launch so the last saved profile remains editable.
-Existing config.txt remains reserved for the original Zygisk package-selection configuration.
-Protected property keys remain skipped: ro.product.hardware, ro.hardware, ro.board.platform, ro.boot.board.platform.
-The bundled resetprop-rs binary supports ARM64-v8a only.
+- inline_hook_spoof keeps its original Zygisk/webroot targeting behavior and config.txt app-target list.
+- DevicePreset property application is system-wide and independent from the app-target list.
+- Shared property file: /data/adb/modules/inline_hook_spoof/config/device.prop
+- Editable source profile: /data/adb/modules/inline_hook_spoof/config/devicepreset-profile.json
+- post-fs-data.sh applies properties using the fixed executable path /system/bin/resetprop-rs --if-diff.
+- The resetprop-rs executable is provided on the device at /system/bin/resetprop-rs; it is not bundled or searched for inside the module.
+- Results are logged to /data/adb/modules/inline_hook_spoof/last_apply.log.
+- Existing protected-key exclusions remain unchanged.
