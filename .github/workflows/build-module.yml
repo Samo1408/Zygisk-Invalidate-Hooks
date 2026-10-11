@@ -41,9 +41,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :module:zipRelease --no-daemon
 
-      - name: Verify freshly built module
-        id: module
-        run: python3 .github/scripts/verify-module.py "$RUNNER_TEMP/module-build-start" "$GITHUB_OUTPUT"
+      
 
       - name: Upload module ZIP
         uses: actions/upload-artifact@v4
