@@ -106,5 +106,8 @@ fi
 
 ui_print "- Setting permissions"
 set_perm_recursive "$MODPATH" 0 0 0755 0644
+# Magisk/KernelSU must be able to execute module lifecycle scripts.
+set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
+set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/bin/resetprop-rs" 0 0 0755
 [ ! -f "$MODPATH/config/devicepreset-profile.json" ] || set_perm "$MODPATH/config/devicepreset-profile.json" 0 0 0644
