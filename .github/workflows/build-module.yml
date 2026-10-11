@@ -24,8 +24,6 @@ jobs:
 
       - name: Install Android SDK and NDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: platform-tools
 
       - name: Install project SDK components
         run: |
@@ -36,16 +34,42 @@ jobs:
         run: |
           set -euo pipefail
           touch "$RUNNER_TEMP/module-build-start"
-          sed -i 's/\r$//' ./gradlew
-          head -n 1 ./gradlew | grep -Fx '#!/usr/bin/env sh'
           chmod +x ./gradlew
           ./gradlew :module:zipRelease --no-daemon
 
-      
+      - name: Verify freshly built module
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          archives=(module/release/*-release.zip)
+          if [ "${#archives[@]}" -ne 1 ]; then
+            echo "Expected exactly one release ZIP in module/release; found ${#archives[@]}"
+            printf '%s\\n' "${archives[@]}"
+            exit 1
+          fi
+          python3 - "${archives[0]}" <<'PY'
+          import sys
+          from zipfile import ZipFile, BadZipFile
+          path = sys.argv[1]
+          required = {"module.prop", "customize.sh", "post-fs-data.sh", "webroot/index.html"}
+          try:
+              with ZipFile(path) as z:
+                  names = set(z.namelist())
+                  missing = required - names
+                  if missing:
+                      raise SystemExit("Module ZIP is missing: " + ", ".join(sorted(missing)))
+                  bad = z.testzip()
+                  if bad:
+                      raise SystemExit("Corrupt ZIP member: " + bad)
+          except BadZipFile as e:
+              raise SystemExit("Invalid module ZIP: " + str(e))
+          print("Verified module ZIP:", path)
+          PY
 
       - name: Upload module ZIP
         uses: actions/upload-artifact@v4
         with:
           name: zygisk-module-release
-          path: ${{ steps.module.outputs.path }}
+          path: module/release/*-release.zip
           if-no-files-found: error
