@@ -16,8 +16,8 @@ fun String.execute(currentWorkingDir: File = file("./")): String {
 }
 
 val moduleId by extra("inline_hook_spoof")
-val moduleName by extra("Inline Hook Spoof")
-val description by extra("Invalidate inline hooks for libart.so to bypass detections.")
+val moduleName by extra("DevicePreset")
+val description by extra("DevicePreset property profile with Zygisk native module integration.")
 val verName by extra("v1")
 val verCode by extra(12)
 val commitHash by extra("d7cdec5")
