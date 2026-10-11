@@ -24,6 +24,8 @@ jobs:
 
       - name: Install Android SDK and NDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Install project SDK components
         run: |
@@ -34,6 +36,8 @@ jobs:
         run: |
           set -euo pipefail
           touch "$RUNNER_TEMP/module-build-start"
+          sed -i 's/\r$//' ./gradlew
+          head -n 1 ./gradlew | grep -Fx '#!/usr/bin/env sh'
           chmod +x ./gradlew
           ./gradlew :module:zipRelease --no-daemon
 
