@@ -1,6 +1,6 @@
 MODDIR=${0%/*}
 CONFIG="$MODDIR/config.txt"
-BIN="$MODDIR/bin/resetprop-rs"
+BIN="/system/bin/resetprop-rs"
 PROPS="$MODDIR/config/device.prop"
 LOG="$MODDIR/last_apply.log"
 
@@ -17,11 +17,11 @@ if [ ! -r "$PROPS" ]; then
     exit 0
 fi
 if [ ! -x "$BIN" ]; then
-    log "ERROR: resetprop-rs missing or not executable: $BIN"
+    log "ERROR: resetprop-rs missing or not executable at fixed system path: $BIN"
     exit 0
 fi
 if [ "$(getprop ro.product.cpu.abi 2>/dev/null)" != "arm64-v8a" ] && [ "$(uname -m 2>/dev/null)" != "aarch64" ]; then
-    log "ERROR: bundled resetprop-rs supports arm64-v8a only; skipping property application"
+    log "ERROR: resetprop-rs at $BIN requires an ARM64 device; skipping property application"
     exit 0
 fi
 
@@ -45,8 +45,8 @@ while IFS= read -r line || [ -n "$line" ]; do
             ;;
     esac
     count=$((count + 1))
-    # resetprop-rs is an Android arm64 PIE executable with PT_INTERP=/system/bin/linker64.
-    # Execute it normally so the kernel invokes its declared interpreter.
+    # Use the user-provided fixed system path; do not search inside the module.
+    # Execute normally so the kernel invokes the ELF PT_INTERP (/system/bin/linker64).
     output=$("$BIN" --if-diff "$name" "$value" 2>&1)
     rc=$?
     if [ "$rc" -eq 0 ]; then
