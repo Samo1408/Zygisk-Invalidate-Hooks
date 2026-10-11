@@ -25,6 +25,11 @@ fi
 
 VERSION=$(grep_prop version "${TMPDIR}/module.prop")
 ui_print "- Installing $SONAME $VERSION"
+if [ -x /system/bin/resetprop-rs ]; then
+  ui_print "- DevicePreset property engine found at /system/bin/resetprop-rs"
+else
+  ui_print "! /system/bin/resetprop-rs is missing or not executable; property application will be skipped"
+fi
 
 # check architecture
 support=false
@@ -64,11 +69,9 @@ if [ -f "$OLDMODPATH/config/devicepreset-profile.json" ]; then cp -f "$OLDMODPAT
 extract "$ZIPFILE" 'module.prop'     "$MODPATH"
 extract "$ZIPFILE" 'post-fs-data.sh' "$MODPATH"
 extract "$ZIPFILE" 'service.sh'      "$MODPATH"
-mkdir -p "$MODPATH/webroot" "$MODPATH/config" "$MODPATH/bin"
+mkdir -p "$MODPATH/webroot" "$MODPATH/config"
 extract "$ZIPFILE" 'webroot/index.html' "$MODPATH/webroot" true
 extract "$ZIPFILE" 'config/device.prop' "$MODPATH"
-extract "$ZIPFILE" 'bin/resetprop-rs' "$MODPATH"
-extract "$ZIPFILE" 'bin/BINARY-SHA256.txt' "$MODPATH"
 # Restore saved DevicePreset settings after extracting defaults.
 [ ! -f "$SAVED_DEVICE_PROP" ] || cp -f "$SAVED_DEVICE_PROP" "$MODPATH/config/device.prop"
 [ ! -f "$SAVED_DEVICE_PROFILE" ] || cp -f "$SAVED_DEVICE_PROFILE" "$MODPATH/config/devicepreset-profile.json"
@@ -109,5 +112,4 @@ set_perm_recursive "$MODPATH" 0 0 0755 0644
 # Magisk/KernelSU must be able to execute module lifecycle scripts.
 set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
 set_perm "$MODPATH/service.sh" 0 0 0755
-set_perm "$MODPATH/bin/resetprop-rs" 0 0 0755
 [ ! -f "$MODPATH/config/devicepreset-profile.json" ] || set_perm "$MODPATH/config/devicepreset-profile.json" 0 0 0644
