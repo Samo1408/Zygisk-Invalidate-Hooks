@@ -1,11 +1,14 @@
-DevicePreset settings integration
-================================
+DevicePreset companion app integration
+======================================
 
-- Profile source: Google Pixel 10 Pro.json included in DevicePreset-Project-resetprop-rs.zip
-- Properties: 95 generated entries in config/device.prop
-- Apply method: bin/resetprop-rs --if-diff NAME VALUE at post-fs-data
-- Log: last_apply.log
-- Existing config.txt is retained for Zygisk app targeting.
-- Protected keys always skipped: ro.product.hardware, ro.hardware, ro.board.platform, ro.boot.board.platform
-- Binary SHA-256: 6d82fc8e92089ce24226636ec4d24deb15655d7a7473d37d24fa4ae53588c1df
-- Binary supports ARM64-v8a only; non-ARM64 property application is skipped.
+Module ID / install path: inline_hook_spoof
+Display name: DevicePreset
+Shared property file: /data/adb/modules/inline_hook_spoof/config/device.prop
+Editable source profile: /data/adb/modules/inline_hook_spoof/config/devicepreset-profile.json
+
+The companion app writes both files atomically after verifying module.prop exists and the module is enabled.
+post-fs-data.sh consumes config/device.prop through resetprop-rs --if-diff.
+The app reloads devicepreset-profile.json on launch so the last saved profile remains editable.
+Existing config.txt remains reserved for the original Zygisk package-selection configuration.
+Protected property keys remain skipped: ro.product.hardware, ro.hardware, ro.board.platform, ro.boot.board.platform.
+The bundled resetprop-rs binary supports ARM64-v8a only.
