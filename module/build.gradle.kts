@@ -94,9 +94,14 @@ androidComponents.onVariants { variant ->
             group = "module"
             dependsOn("assemble$variantCapped")
             into(moduleDir)
+            // Text assets can be normalized to LF, but never run text filters on ELF binaries.
             from(layout.projectDirectory.file("template")) {
-                exclude("module.prop", "customize.sh", "post-fs-data.sh", "service.sh")
+                exclude("module.prop", "customize.sh", "post-fs-data.sh", "service.sh", "bin/resetprop-rs")
                 filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))
+            }
+            // Copy resetprop-rs byte-for-byte; FixCrLfFilter corrupts ELF files.
+            from(layout.projectDirectory.file("template")) {
+                include("bin/resetprop-rs")
             }
             from(layout.projectDirectory.file("template")) {
                 include("module.prop")
