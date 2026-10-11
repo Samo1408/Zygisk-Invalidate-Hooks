@@ -54,11 +54,24 @@ extract "$ZIPFILE" 'verify.sh'     "$TMPDIR/.vunzip"
 extract "$ZIPFILE" 'sepolicy.rule' "$TMPDIR"
 
 ui_print "- Extracting module files"
+# Preserve settings from an already-installed version when updating the module.
+OLDMODPATH="/data/adb/modules/$SONAME"
+SAVED_DEVICE_PROP="$TMPDIR/device.prop.saved"
+SAVED_DEVICE_PROFILE="$TMPDIR/devicepreset-profile.json.saved"
+if [ -f "$OLDMODPATH/config/device.prop" ]; then cp -f "$OLDMODPATH/config/device.prop" "$SAVED_DEVICE_PROP"; fi
+if [ -f "$OLDMODPATH/config/devicepreset-profile.json" ]; then cp -f "$OLDMODPATH/config/devicepreset-profile.json" "$SAVED_DEVICE_PROFILE"; fi
+
 extract "$ZIPFILE" 'module.prop'     "$MODPATH"
 extract "$ZIPFILE" 'post-fs-data.sh' "$MODPATH"
 extract "$ZIPFILE" 'service.sh'      "$MODPATH"
-mkdir -p "$MODPATH/webroot"
+mkdir -p "$MODPATH/webroot" "$MODPATH/config" "$MODPATH/bin"
 extract "$ZIPFILE" 'webroot/index.html' "$MODPATH/webroot" true
+extract "$ZIPFILE" 'config/device.prop' "$MODPATH"
+extract "$ZIPFILE" 'bin/resetprop-rs' "$MODPATH"
+extract "$ZIPFILE" 'bin/BINARY-SHA256.txt' "$MODPATH"
+# Restore saved DevicePreset settings after extracting defaults.
+[ ! -f "$SAVED_DEVICE_PROP" ] || cp -f "$SAVED_DEVICE_PROP" "$MODPATH/config/device.prop"
+[ ! -f "$SAVED_DEVICE_PROFILE" ] || cp -f "$SAVED_DEVICE_PROFILE" "$MODPATH/config/devicepreset-profile.json"
 mv "$TMPDIR/sepolicy.rule" "$MODPATH"
 
 if [ ! -f "$MODPATH/config.txt" ]; then
@@ -93,3 +106,5 @@ fi
 
 ui_print "- Setting permissions"
 set_perm_recursive "$MODPATH" 0 0 0755 0644
+set_perm "$MODPATH/bin/resetprop-rs" 0 0 0755
+[ ! -f "$MODPATH/config/devicepreset-profile.json" ] || set_perm "$MODPATH/config/devicepreset-profile.json" 0 0 0644
