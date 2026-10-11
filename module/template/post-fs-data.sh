@@ -45,7 +45,7 @@ while IFS= read -r line || [ -n "$line" ]; do
             ;;
     esac
     count=$((count + 1))
-    output=$("$BIN" --stealth "$name" "$value" 2>&1)
+    output=$("$BIN" --if-diff "$name" "$value" 2>&1)
     rc=$?
     if [ "$rc" -eq 0 ]; then
         log "OK/UNCHANGED: $name"
