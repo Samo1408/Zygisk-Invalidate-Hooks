@@ -2,7 +2,7 @@ name: Build Zygisk module
 
 on:
   
-  
+  push:
 
 permissions:
   contents: read
