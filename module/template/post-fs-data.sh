@@ -45,12 +45,20 @@ while IFS= read -r line || [ -n "$line" ]; do
             ;;
     esac
     count=$((count + 1))
-    output=$("$BIN" --if-diff "$name" "$value" 2>&1)
-    rc=$?
+    # Invoke Android PIE through its dynamic linker in early-boot environments.
+    if [ -x /system/bin/linker64 ]; then
+        output=$(/system/bin/linker64 "$BIN" --if-diff "$name" "$value" 2>&1)
+        rc=$?
+    else
+        output=$("$BIN" --if-diff "$name" "$value" 2>&1)
+        rc=$?
+    fi
     if [ "$rc" -eq 0 ]; then
         log "OK/UNCHANGED: $name"
         applied=$((applied + 1))
     else
+        # Keep diagnostics readable if launch errors contain binary bytes.
+        output=$(printf '%s' "$output" | tr '\000-\010\013\014\016-\037' '?' | cut -c1-240)
         log "SKIP/ERROR ($rc): $name ${output}"
         failed=$((failed + 1))
     fi
