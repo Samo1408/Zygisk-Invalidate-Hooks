@@ -4,7 +4,7 @@ DevicePreset / inline_hook_spoof integration
 - DevicePreset property application is system-wide and independent from the app-target list.
 - Shared property file: /data/adb/modules/inline_hook_spoof/config/device.prop
 - Editable source profile: /data/adb/modules/inline_hook_spoof/config/devicepreset-profile.json
-- post-fs-data.sh applies properties using the fixed executable path /system/bin/resetprop-rs --if-diff.
+- post-fs-data.sh applies properties using the fixed executable path /system/bin/resetprop-rs --stealth.
 - The resetprop-rs executable is provided on the device at /system/bin/resetprop-rs; it is not bundled or searched for inside the module.
 - Results are logged to /data/adb/modules/inline_hook_spoof/last_apply.log.
-- Existing protected-key exclusions remain unchanged.
+- ro.hardware is intentionally applied from the DevicePreset hardware field; ro.product.hardware remains excluded. Existing boot-sensitive platform exclusions remain unchanged.
