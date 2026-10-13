@@ -51,19 +51,41 @@ if [ -r "$PROPS" ] && [ -r "$BIN" ] && [ -x "$LINKER" ]; then
     echo "[$(date '+%H:%M:%S' 2>/dev/null)] LATE SUMMARY total=$count verified=$ok readback_mismatch=$mismatch failed=$failed (baseband/SoC reapply)" >> "$LOG"
 fi
 
-# Diagnostic only: sample SoC values after the late apply to identify whether
-# Android/vendor services republish the hardware values later in boot.
-# This section does not write properties and does not touch Zygisk app targeting.
-if [ -r "$PROPS" ]; then
+# Bounded SoC re-apply pass. The audit showed ro.soc.* returning the original
+# chipset strings while ro.hardware.soc.* and ro.boot.soc.* retained the target.
+# Re-apply only the two mismatching keys at bounded intervals and record the
+# command result AND readback. This does not touch ro.hardware or app targeting.
+if [ -r "$PROPS" ] && [ -r "$BIN" ] && [ -x "$LINKER" ]; then
     soc_model_expected=$(sed -n 's/^ro.soc.model=//p' "$PROPS" | head -n 1)
     soc_mfr_expected=$(sed -n 's/^ro.soc.manufacturer=//p' "$PROPS" | head -n 1)
-    for delay in 0 2 5 10 20 30 60; do
-        [ "$delay" -eq 0 ] || sleep "$((delay - prev_delay))"
-        prev_delay=$delay
-        actual_model=$(getprop ro.soc.model 2>/dev/null)
-        actual_mfr=$(getprop ro.soc.manufacturer 2>/dev/null)
-        actual_hw_model=$(getprop ro.hardware.soc.model 2>/dev/null)
-        actual_boot_model=$(getprop ro.boot.soc.model 2>/dev/null)
-        echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-SAMPLE t=${delay}s model_expected=[$soc_model_expected] model=[$actual_model] manufacturer_expected=[$soc_mfr_expected] manufacturer=[$actual_mfr] hw_model=[$actual_hw_model] boot_model=[$actual_boot_model]" >> "$LOG"
-    done
+    if [ -n "$soc_model_expected" ] || [ -n "$soc_mfr_expected" ]; then
+        prev_delay=0
+        for delay in 0 2 5 10 20 30 60; do
+            [ "$delay" -eq 0 ] || sleep "$((delay - prev_delay))"
+            prev_delay=$delay
+            for key in ro.soc.model ro.soc.manufacturer; do
+                case "$key" in
+                    ro.soc.model) value=$soc_model_expected ;;
+                    ro.soc.manufacturer) value=$soc_mfr_expected ;;
+                esac
+                [ -n "$value" ] || continue
+                before=$(getprop "$key" 2>/dev/null)
+                if [ "$before" != "$value" ]; then
+                    output=$("$LINKER" "$BIN" --stealth "$key" "$value" 2>&1)
+                    rc=$?
+                    actual=$(getprop "$key" 2>/dev/null)
+                    output=$(printf '%s' "$output" | tr -cd '[:print:]\n' | cut -c1-120)
+                    echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-REAPPLY t=${delay}s key=$key rc=$rc before=[$before] expected=[$value] actual=[$actual] output=[$output]" >> "$LOG"
+                else
+                    actual=$before
+                    echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-REAPPLY t=${delay}s key=$key already_verified=[$actual]" >> "$LOG"
+                fi
+            done
+            actual_model=$(getprop ro.soc.model 2>/dev/null)
+            actual_mfr=$(getprop ro.soc.manufacturer 2>/dev/null)
+            actual_hw_model=$(getprop ro.hardware.soc.model 2>/dev/null)
+            actual_boot_model=$(getprop ro.boot.soc.model 2>/dev/null)
+            echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-SAMPLE t=${delay}s model_expected=[$soc_model_expected] model=[$actual_model] manufacturer_expected=[$soc_mfr_expected] manufacturer=[$actual_mfr] hw_model=[$actual_hw_model] boot_model=[$actual_boot_model]" >> "$LOG"
+        done
+    fi
 fi
