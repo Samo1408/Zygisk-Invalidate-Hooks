@@ -6,5 +6,5 @@ DevicePreset / inline_hook_spoof integration
 - Editable source profile: /data/adb/modules/inline_hook_spoof/config/devicepreset-profile.json
 - post-fs-data.sh applies properties using the fixed executable path /system/bin/resetprop-rs --stealth.
 - The resetprop-rs executable is provided on the device at /system/bin/resetprop-rs; it is not bundled or searched for inside the module.
-- Results are logged to /data/adb/modules/inline_hook_spoof/last_apply.log.
-- ro.hardware is intentionally applied from the DevicePreset hardware field; ro.product.hardware remains excluded. Existing boot-sensitive platform exclusions remain unchanged.
+- Results, including getprop read-back verification, are logged to /data/adb/modules/inline_hook_spoof/last_apply.log. Read-back verification does not imply that independent framework or hardware APIs report the same value.
+- ro.hardware is intentionally disabled because it can cause lock-screen problems; ro.product.hardware, ro.board.platform, and ro.boot.board.platform are also excluded.
