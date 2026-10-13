@@ -24,3 +24,5 @@ string for kernelVersion. This is configuration storage only: it does not alter
 /proc output until a separate native runtime implementation is added and tested.
 The original main.cpp targeting flow and mainCore.cxx restoration implementation
 remain unchanged in this stage.
+
+- The next diagnostic pass compares Android `getprop` with resetprop-rs's own property read before and after a SoC write. This distinguishes a write/read-path discrepancy from a value that both readers still report unchanged; `rc=0` alone is not treated as verification.
