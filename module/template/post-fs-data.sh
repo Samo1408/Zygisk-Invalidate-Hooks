@@ -16,8 +16,12 @@ if [ ! -r "$PROPS" ]; then
     log "INFO: no device property config at $PROPS; skipping property application"
     exit 0
 fi
-if [ ! -x "$BIN" ]; then
-    log "ERROR: resetprop-rs missing or not executable at fixed system path: $BIN"
+if [ ! -r "$BIN" ]; then
+    log "ERROR: resetprop-rs missing or not readable at fixed system path: $BIN"
+    exit 0
+fi
+if [ ! -x /system/bin/linker64 ]; then
+    log "ERROR: Android linker is missing or not executable: /system/bin/linker64"
     exit 0
 fi
 if [ "$(getprop ro.product.cpu.abi 2>/dev/null)" != "arm64-v8a" ] && [ "$(uname -m 2>/dev/null)" != "aarch64" ]; then
@@ -38,7 +42,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     name=${line%%=*}
     value=${line#*=}
     case "$name" in
-        ''|ro.product.hardware|ro.hardware|ro.board.platform|ro.boot.board.platform)
+        ''|ro.product.hardware|ro.board.platform|ro.boot.board.platform)
             log "SKIP protected key: $name"
             skipped=$((skipped + 1))
             continue
@@ -46,8 +50,8 @@ while IFS= read -r line || [ -n "$line" ]; do
     esac
     count=$((count + 1))
     # Use the user-provided fixed system path; do not search inside the module.
-    # Execute normally so the kernel invokes the ELF PT_INTERP (/system/bin/linker64).
-    output=$("$BIN" --if-diff "$name" "$value" 2>&1)
+    # Invoke through Android linker explicitly; use --stealth because it is the verified working mode on-device.
+    output=$( /system/bin/linker64 "$BIN" --stealth "$name" "$value" 2>&1)
     rc=$?
     if [ "$rc" -eq 0 ]; then
         log "OK/UNCHANGED: $name"
