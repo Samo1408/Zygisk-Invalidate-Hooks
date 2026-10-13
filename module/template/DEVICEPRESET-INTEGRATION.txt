@@ -13,16 +13,29 @@ DevicePreset / inline_hook_spoof integration
 
 
 
-Procfs editor fields (stage 3)
-------------------------------
-The DevicePreset editor now exposes cpuinfoHardware (the Hardware: line from
-/proc/cpuinfo) and kernelVersion (the leading Linux version token/string from
-/proc/version). Save writes these values to config/proc-overrides.conf, kept
-separate from config/device.prop so resetprop-rs never treats them as Android
-property names. A dice button generates a plausible 4.14.x-android14.YYYYMMDD
-string for kernelVersion. This is configuration storage only: it does not alter
-/proc output until a separate native runtime implementation is added and tested.
-The original main.cpp targeting flow and mainCore.cxx restoration implementation
-remain unchanged in this stage.
+Zygisk native hooks (step 7)
+----------------------------
+The native library now compiles native_spoof.cpp into libinline_hook_spoof.so.
+For packages enabled in config.txt, main.cpp loads the override files during
+preAppSpecialize and installs native PLT/GOT hooks during postAppSpecialize.
+The hook layer intercepts imported Bionic property APIs (__system_property_get,
+__system_property_find, __system_property_read, __system_property_read_callback,
+and __system_property_serial) and imported open/openat/fopen variants.
+Property values are sourced from config/device.prop in the selected app process;
+CPUINFO_HARDWARE and PROC_VERSION are sourced from config/proc-overrides.conf.
+For /proc/cpuinfo, only the Hardware line is replaced; for /proc/version, only
+the Linux version token is replaced. Other file paths and non-overridden
+properties are forwarded to their original functions.
+
+The original mainCore.cxx restoration implementation is unchanged. Its existing
+call remains in preAppSpecialize; the additional native hooks install after app
+specialization and are limited to the same config.txt-selected processes.
+This is a PLT/GOT import hook, not an inline instruction patch. It affects
+already-loaded ELF objects with matching dynamic relocations; libraries loaded
+later or code using direct syscalls/internal non-PLT calls may bypass it. Device
+runtime validation is still required, and a successful build/log line alone is
+not proof that every consumer uses the spoofed values.
 
 - The next diagnostic pass compares Android `getprop` with resetprop-rs's own property read before and after a SoC write. This distinguishes a write/read-path discrepancy from a value that both readers still report unchanged; `rc=0` alone is not treated as verification.
+
+- Step 6: for only `ro.soc.model` and `ro.soc.manufacturer`, the late pass first tries `--stealth`; if Android `getprop` still mismatches, it tries the tool's documented `--init` mode and then the normal setter. Every attempt is verified through Android `getprop` and logged with its mode. The normal setter can notify property listeners; this fallback is limited to those two keys and only runs when prior readback checks fail. Device testing is required to establish which mode works on this ROM.
