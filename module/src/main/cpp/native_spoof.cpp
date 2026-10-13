@@ -488,7 +488,10 @@ static ElfW(Xword) relocType(ElfW(Xword) info) {
 #endif
 }
 
-struct PatchContext { size_t slotsPatched = 0; };
+struct PatchContext {
+    size_t slotsPatched = 0;
+    size_t byHook[sizeof(gHooks) / sizeof(gHooks[0])]{};
+};
 static int patchLoadedObject(dl_phdr_info *info, size_t, void *opaque) {
     PatchContext *ctx = static_cast<PatchContext *>(opaque);
     if (!info || !info->dlpi_phdr) return 0;
@@ -532,10 +535,14 @@ static int patchLoadedObject(dl_phdr_info *info, size_t, void *opaque) {
         const ElfW(Sym) &sym = symtab[symbolIndex(rInfo)];
         const char *name = strtab + sym.st_name;
         if (!name || !*name) return;
-        for (HookSpec &h : gHooks) {
+        for (size_t hookIndex = 0; hookIndex < sizeof(gHooks) / sizeof(gHooks[0]); ++hookIndex) {
+            HookSpec &h = gHooks[hookIndex];
             if (strcmp(name, h.name) != 0) continue;
             uintptr_t slot = static_cast<uintptr_t>(info->dlpi_addr) + offset;
-            if (patchSlot(info, slot, h)) ++ctx->slotsPatched;
+            if (patchSlot(info, slot, h)) {
+                ++ctx->slotsPatched;
+                ++ctx->byHook[hookIndex];
+            }
             break;
         }
     };
@@ -562,12 +569,20 @@ static int patchLoadedObject(dl_phdr_info *info, size_t, void *opaque) {
     return 0;
 }
 
+static void logPatchSummary(const char *phase, const PatchContext &ctx) {
+    LOGI("DevicePreset native hook summary phase=%s patched_slots=%zu", phase, ctx.slotsPatched);
+    for (size_t i = 0; i < sizeof(gHooks) / sizeof(gHooks[0]); ++i) {
+        if (ctx.byHook[i] != 0) {
+            LOGI("DevicePreset native hook patched phase=%s symbol=%s slots=%zu",
+                 phase, gHooks[i].name, ctx.byHook[i]);
+        }
+    }
+}
+
 static void repatchAfterLibraryLoad() {
     PatchContext ctx;
     dl_iterate_phdr(patchLoadedObject, &ctx);
-    if (ctx.slotsPatched != 0) {
-        LOGI("DevicePreset native hooks extended to newly loaded libraries: patched_slots=%zu", ctx.slotsPatched);
-    }
+    if (ctx.slotsPatched != 0) logPatchSummary("late-dlopen", ctx);
 }
 
 static void *hook_dlopen(const char *filename, int flags) {
@@ -618,4 +633,5 @@ void installNativeHooks() {
     dl_iterate_phdr(patchLoadedObject, &ctx);
     LOGI("DevicePreset Zygisk native PLT hooks installed: patched_slots=%zu properties=%zu cpuinfo=%d proc_version=%d",
          ctx.slotsPatched, gProps.size(), !gCpuHardware.empty(), !gKernelVersion.empty());
+    logPatchSummary("initial", ctx);
 }
