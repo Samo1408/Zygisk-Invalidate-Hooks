@@ -39,3 +39,11 @@ not proof that every consumer uses the spoofed values.
 - The next diagnostic pass compares Android `getprop` with resetprop-rs's own property read before and after a SoC write. This distinguishes a write/read-path discrepancy from a value that both readers still report unchanged; `rc=0` alone is not treated as verification.
 
 - Step 6: for only `ro.soc.model` and `ro.soc.manufacturer`, the late pass first tries `--stealth`; if Android `getprop` still mismatches, it tries the tool's documented `--init` mode and then the normal setter. Every attempt is verified through Android `getprop` and logged with its mode. The normal setter can notify property listeners; this fallback is limited to those two keys and only runs when prior readback checks fail. Device testing is required to establish which mode works on this ROM.
+
+
+Native hook diagnostics (step 10)
+--------------------------------
+- Initial Zygisk installation now logs a per-symbol PLT/GOT patch summary, including each property API and file API with one or more patched slots.
+- Newly loaded libraries log the same per-symbol summary when additional slots are patched.
+- A nonzero total patched_slots does not prove that the target's property-reading path was intercepted; check whether the relevant __system_property_* symbols have patched slots. A zero count means this PLT/GOT pass did not find any matching relocation slots in currently loaded objects.
+- These logs are diagnostic only and do not alter the original mainCore.cxx restoration flow or broaden package targeting.
