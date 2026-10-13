@@ -42,7 +42,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     name=${line%%=*}
     value=${line#*=}
     case "$name" in
-        ''|ro.product.hardware|ro.board.platform|ro.boot.board.platform)
+        ''|ro.hardware|ro.product.hardware|ro.board.platform|ro.boot.board.platform)
             log "SKIP protected key: $name"
             skipped=$((skipped + 1))
             continue
