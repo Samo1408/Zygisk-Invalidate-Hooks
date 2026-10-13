@@ -3,9 +3,16 @@
 MODDIR=${0%/*}
 PROPS="$MODDIR/config/device.prop"
 get_expected() { sed -n "s/^$1=//p" "$PROPS" | head -n 1; }
+BIN="/system/bin/resetprop-rs"
+LINKER="/system/bin/linker64"
 show_prop() {
     name="$1"
-    printf '%-34s expected=[%s] actual=[%s]\n' "$name" "$(get_expected "$name")" "$(getprop "$name" 2>/dev/null)"
+    actual=$(getprop "$name" 2>/dev/null)
+    tool_actual="(unavailable)"
+    if [ -r "$BIN" ] && [ -x "$LINKER" ]; then
+        tool_actual=$("$LINKER" "$BIN" "$name" 2>/dev/null | tail -n 1)
+    fi
+    printf '%-34s expected=[%s] getprop=[%s] resetprop_rs=[%s]\n' "$name" "$(get_expected "$name")" "$actual" "$tool_actual"
 }
 echo '=== Configured vs live SoC properties ==='
 for p in ro.soc.model ro.soc.manufacturer ro.hardware.soc.model ro.hardware.soc.manufacturer ro.boot.soc.model ro.boot.soc.manufacturer ro.board.platform ro.hardware ro.boot.hardware; do
