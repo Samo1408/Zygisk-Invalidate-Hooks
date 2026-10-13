@@ -47,7 +47,6 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :module:zipRelease --no-daemon
 
-      
 
       - name: Upload module ZIP
         uses: actions/upload-artifact@v4
@@ -56,4 +55,3 @@ jobs:
           path: module/release/*-release.zip
           if-no-files-found: error
 
-  
