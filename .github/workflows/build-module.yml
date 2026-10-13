@@ -47,6 +47,49 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :module:zipRelease --no-daemon
 
+      - name: Verify freshly built module
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          archives=(module/release/*-release.zip)
+          if [ "${#archives[@]}" -ne 1 ]; then
+            echo "Expected exactly one release ZIP in module/release; found ${#archives[@]}"
+            printf '%s\\n' "${archives[@]}"
+            exit 1
+          fi
+          python3 - "${archives[0]}" <<'PY'
+          import sys
+          from zipfile import ZipFile, BadZipFile
+          path = sys.argv[1]
+          required = {"module.prop", "customize.sh", "post-fs-data.sh", "service.sh", "audit-properties.sh", "webroot/index.html", "config/device.prop"}
+          try:
+              with ZipFile(path) as z:
+                  names = set(z.namelist())
+                  missing = required - names
+                  if missing:
+                      raise SystemExit("Module ZIP is missing: " + ", ".join(sorted(missing)))
+                  bad = z.testzip()
+                  if bad:
+                      raise SystemExit("Corrupt ZIP member: " + bad)
+                  script = z.read("post-fs-data.sh").decode("utf-8")
+                  if 'BIN="/system/bin/resetprop-rs"' not in script:
+                      raise SystemExit("post-fs-data.sh does not use the fixed /system/bin/resetprop-rs path")
+                  if "$MODDIR/bin/resetprop-rs" in script:
+                      raise SystemExit("post-fs-data.sh still refers to the module-local resetprop-rs")
+          except BadZipFile as e:
+              raise SystemExit("Invalid module ZIP: " + str(e))
+          print("Verified module ZIP:", path)
+          PY
+
+      - name: Build DevicePreset companion APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew -p companion-app assembleDebug --no-daemon
+          test -s companion-app/app/build/outputs/apk/debug/app-debug.apk
+          mkdir -p companion-app/dist
+          cp companion-app/app/build/outputs/apk/debug/app-debug.apk companion-app/dist/DevicePreset-companion.apk
 
       - name: Upload module ZIP
         uses: actions/upload-artifact@v4
@@ -55,3 +98,9 @@ jobs:
           path: module/release/*-release.zip
           if-no-files-found: error
 
+      - name: Upload DevicePreset companion APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DevicePreset-companion-APK
+          path: companion-app/dist/DevicePreset-companion.apk
+          if-no-files-found: error
