@@ -50,3 +50,20 @@ if [ -r "$PROPS" ] && [ -r "$BIN" ] && [ -x "$LINKER" ]; then
     done < "$PROPS"
     echo "[$(date '+%H:%M:%S' 2>/dev/null)] LATE SUMMARY total=$count verified=$ok readback_mismatch=$mismatch failed=$failed (baseband/SoC reapply)" >> "$LOG"
 fi
+
+# Diagnostic only: sample SoC values after the late apply to identify whether
+# Android/vendor services republish the hardware values later in boot.
+# This section does not write properties and does not touch Zygisk app targeting.
+if [ -r "$PROPS" ]; then
+    soc_model_expected=$(sed -n 's/^ro.soc.model=//p' "$PROPS" | head -n 1)
+    soc_mfr_expected=$(sed -n 's/^ro.soc.manufacturer=//p' "$PROPS" | head -n 1)
+    for delay in 0 2 5 10 20 30 60; do
+        [ "$delay" -eq 0 ] || sleep "$((delay - prev_delay))"
+        prev_delay=$delay
+        actual_model=$(getprop ro.soc.model 2>/dev/null)
+        actual_mfr=$(getprop ro.soc.manufacturer 2>/dev/null)
+        actual_hw_model=$(getprop ro.hardware.soc.model 2>/dev/null)
+        actual_boot_model=$(getprop ro.boot.soc.model 2>/dev/null)
+        echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-SAMPLE t=${delay}s model_expected=[$soc_model_expected] model=[$actual_model] manufacturer_expected=[$soc_mfr_expected] manufacturer=[$actual_mfr] hw_model=[$actual_hw_model] boot_model=[$actual_boot_model]" >> "$LOG"
+    done
+fi
