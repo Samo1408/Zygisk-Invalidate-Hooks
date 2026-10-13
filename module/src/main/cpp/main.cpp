@@ -118,7 +118,7 @@ public:
             JNIEnv *env = nullptr;
 
             if (cMov->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-                cMov->AttachCurrentThread(reinterpret_cast<void **>(&env), nullptr);
+                cMov->AttachCurrentThread(&env, nullptr);
             }
 
             if (env) {
