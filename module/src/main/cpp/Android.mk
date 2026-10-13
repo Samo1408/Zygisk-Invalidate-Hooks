@@ -8,7 +8,7 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := inline_hook_spoof
-LOCAL_SRC_FILES := main.cpp mainCore.cxx
+LOCAL_SRC_FILES := main.cpp mainCore.cxx native_spoof.cpp
 
 LOCAL_C_INCLUDES += \
     $(LOCAL_PATH)/Frida/$(TARGET_ARCH_ABI) \
