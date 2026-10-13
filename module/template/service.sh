@@ -20,10 +20,10 @@ if [ -r "$PROPS" ] && [ -r "$BIN" ] && [ -x "$LINKER" ]; then
     sleep 8
     count=0
     ok=0
+    mismatch=0
     failed=0
     while IFS= read -r line || [ -n "$line" ]; do
-        case "$line" in ''|\#*|*=*) ;; *) continue ;; esac
-        case "$line" in *=*) ;; *) continue ;; esac
+        case "$line" in ''|\#*) continue ;; *=*) ;; *) continue ;; esac
         name=${line%%=*}
         value=${line#*=}
         case "$name" in
@@ -35,13 +35,18 @@ if [ -r "$PROPS" ] && [ -r "$BIN" ] && [ -x "$LINKER" ]; then
         output=$("$LINKER" "$BIN" --stealth "$name" "$value" 2>&1)
         rc=$?
         if [ "$rc" -eq 0 ]; then
-            ok=$((ok + 1))
+            actual=$(getprop "$name" 2>/dev/null)
+            if [ "$actual" = "$value" ]; then
+                ok=$((ok + 1))
+            else
+                echo "[$(date '+%H:%M:%S' 2>/dev/null)] LATE/READBACK_MISMATCH: $name expected=[$value] actual=[$actual]" >> "$LOG"
+                mismatch=$((mismatch + 1))
+            fi
         else
-            output=$(printf '%s' "$output" | tr '\000-\010\013\014\016-\037' '?' | cut -c1-180)
+            output=$(printf '%s' "$output" | tr -cd '[:print:]\n' | cut -c1-180)
             echo "[$(date '+%H:%M:%S' 2>/dev/null)] LATE/ERROR ($rc): $name $output" >> "$LOG"
             failed=$((failed + 1))
         fi
     done < "$PROPS"
-    echo "[$(date '+%H:%M:%S' 2>/dev/null)] LATE SUMMARY total=$count ok=$ok failed=$failed (baseband/SoC reapply)" >> "$LOG"
+    echo "[$(date '+%H:%M:%S' 2>/dev/null)] LATE SUMMARY total=$count verified=$ok readback_mismatch=$mismatch failed=$failed (baseband/SoC reapply)" >> "$LOG"
 fi
-
