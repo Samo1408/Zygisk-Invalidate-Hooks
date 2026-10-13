@@ -1,10 +1,12 @@
 #include <jni.h>
+#include <stdint.h>
 #include <cstring>
 #include <string>
 #include <vector>
 #include <fstream>
 #include "zygisk.hpp"
 #include "mainCore.hxx"
+#include "native_spoof.hxx"
 #include "log.h"
 
 /**
@@ -116,7 +118,7 @@ public:
             JNIEnv *env = nullptr;
 
             if (cMov->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-                cMov->AttachCurrentThread(&env, nullptr);
+                cMov->AttachCurrentThread(reinterpret_cast<void **>(&env), nullptr);
             }
 
             if (env) {
@@ -147,6 +149,9 @@ public:
                            }
                            if (mFound) {
 
+                            // Load override data while Zygisk still has access to module config.
+                            loadNativeOverrides();
+
                             // LOGI("cleaning %s in %s", config.mName.c_str(), proc);
 
                             /**
@@ -168,7 +173,14 @@ public:
              }
          return;
       }
-    //
+
+    void postAppSpecialize(const AppSpecializeArgs* args) override {
+        (void)args;
+        if (mFound) {
+            // Additive native hooks: original mainCore/libart restoration remains untouched.
+            installNativeHooks();
+        }
+    }
 };
 
 REGISTER_ZYGISK_MODULE(MyModule)
