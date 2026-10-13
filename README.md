@@ -46,3 +46,10 @@ graph TD
 ### Config Format:
 `1:libart.so` (1 for enabled)  
 `com.example.app` (package names line by line)
+
+
+## DevicePreset settings integration
+
+This source tree also carries DevicePreset's property-profile application mechanism. The included `template/config/device.prop` is generated from the bundled **Google Pixel 10 Pro** profile and is applied during `post-fs-data` using `/system/bin/resetprop-rs --if-diff`. Edit `config/device.prop` in the installed module to change values; `config.txt` remains the separate original Zygisk app-target list and is not overwritten.
+
+The property applicator skips `ro.product.hardware`, `ro.hardware`, `ro.board.platform`, and `ro.boot.board.platform` to preserve the previously established boot-safety exclusions. The resetprop-rs executable expected at `/system/bin/resetprop-rs` is ARM64-only; on other architectures the property step logs and skips without stopping module initialization. Application results are recorded in `/data/adb/modules/inline_hook_spoof/last_apply.log`. The original native Zygisk source and its configuration format are otherwise unchanged. The resetprop-rs executable is provided at the fixed system path and is not bundled or searched for inside the module. DevicePreset property application remains system-wide and independent from the webroot app-target list.
