@@ -1,6 +1,6 @@
 # Migrated from DevicePreset profile: Google Pixel 10 Pro
 
-# Applied at post-fs-data with resetprop-rs --if-diff.
+# Applied at post-fs-data with resetprop-rs --stealth.
 # Protected boot-sensitive keys are intentionally omitted.
 ro.bootloader=blazer-1.0-13450100
 ro.boot.bootloader=blazer-1.0-13450100
@@ -97,3 +97,4 @@ ro.hardware.soc.model=Google Tensor G5
 ro.boot.soc.model=Google Tensor G5
 ro.soc.manufacturer=Google
 ro.hardware.soc.manufacturer=Google
+ro.hardware=blazer
