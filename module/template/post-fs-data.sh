@@ -33,6 +33,7 @@ count=0
 applied=0
 skipped=0
 failed=0
+mismatch=0
 while IFS= read -r line || [ -n "$line" ]; do
     case "$line" in
         ''|\#*) continue ;;
@@ -54,14 +55,20 @@ while IFS= read -r line || [ -n "$line" ]; do
     output=$( /system/bin/linker64 "$BIN" --stealth "$name" "$value" 2>&1)
     rc=$?
     if [ "$rc" -eq 0 ]; then
-        log "OK/UNCHANGED: $name"
-        applied=$((applied + 1))
+        actual=$(getprop "$name" 2>/dev/null)
+        if [ "$actual" = "$value" ]; then
+            log "OK/VERIFIED: $name"
+            applied=$((applied + 1))
+        else
+            log "WARN/READBACK_MISMATCH: $name expected=[$value] actual=[$actual]"
+            mismatch=$((mismatch + 1))
+        fi
     else
         # Keep diagnostics readable if launch errors contain non-text bytes.
         output=$(printf '%s' "$output" | tr '\000-\010\013\014\016-\037' '?' | cut -c1-240)
-        log "SKIP/ERROR ($rc): $name ${output}"
+        log "ERROR ($rc): $name ${output}"
         failed=$((failed + 1))
     fi
 done < "$PROPS"
-log "SUMMARY total=$count ok_or_unchanged=$applied skipped=$skipped failed=$failed"
+log "SUMMARY total=$count verified=$applied readback_mismatch=$mismatch skipped=$skipped failed=$failed"
 exit 0
