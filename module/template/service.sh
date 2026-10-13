@@ -70,15 +70,17 @@ if [ -r "$PROPS" ] && [ -r "$BIN" ] && [ -x "$LINKER" ]; then
                 esac
                 [ -n "$value" ] || continue
                 before=$(getprop "$key" 2>/dev/null)
+                tool_before=$("$LINKER" "$BIN" "$key" 2>/dev/null | tail -n 1)
                 if [ "$before" != "$value" ]; then
                     output=$("$LINKER" "$BIN" --stealth "$key" "$value" 2>&1)
                     rc=$?
                     actual=$(getprop "$key" 2>/dev/null)
+                    tool_actual=$("$LINKER" "$BIN" "$key" 2>/dev/null | tail -n 1)
                     output=$(printf '%s' "$output" | tr -cd '[:print:]\n' | cut -c1-120)
-                    echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-REAPPLY t=${delay}s key=$key rc=$rc before=[$before] expected=[$value] actual=[$actual] output=[$output]" >> "$LOG"
+                    echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-REAPPLY t=${delay}s key=$key rc=$rc before_getprop=[$before] before_tool=[$tool_before] expected=[$value] after_getprop=[$actual] after_tool=[$tool_actual] output=[$output]" >> "$LOG"
                 else
                     actual=$before
-                    echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-REAPPLY t=${delay}s key=$key already_verified=[$actual]" >> "$LOG"
+                    echo "[$(date '+%H:%M:%S' 2>/dev/null)] SOC-REAPPLY t=${delay}s key=$key already_verified_getprop=[$actual] tool_readback=[$tool_before]" >> "$LOG"
                 fi
             done
             actual_model=$(getprop ro.soc.model 2>/dev/null)
