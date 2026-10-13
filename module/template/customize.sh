@@ -70,6 +70,7 @@ extract "$ZIPFILE" 'module.prop'     "$MODPATH"
 extract "$ZIPFILE" 'post-fs-data.sh' "$MODPATH"
 extract "$ZIPFILE" 'service.sh'      "$MODPATH"
 extract "$ZIPFILE" 'audit-properties.sh' "$MODPATH"
+extract "$ZIPFILE" 'audit-soc.sh' "$MODPATH"
 mkdir -p "$MODPATH/webroot" "$MODPATH/config"
 extract "$ZIPFILE" 'webroot/index.html' "$MODPATH/webroot" true
 extract "$ZIPFILE" 'config/device.prop' "$MODPATH"
@@ -114,4 +115,5 @@ set_perm_recursive "$MODPATH" 0 0 0755 0644
 set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
 set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/audit-properties.sh" 0 0 0755
+set_perm "$MODPATH/audit-soc.sh" 0 0 0755
 [ ! -f "$MODPATH/config/devicepreset-profile.json" ] || set_perm "$MODPATH/config/devicepreset-profile.json" 0 0 0644
