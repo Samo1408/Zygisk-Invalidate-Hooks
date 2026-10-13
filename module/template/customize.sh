@@ -25,10 +25,10 @@ fi
 
 VERSION=$(grep_prop version "${TMPDIR}/module.prop")
 ui_print "- Installing $SONAME $VERSION"
-if [ -x /system/bin/resetprop-rs ]; then
-  ui_print "- DevicePreset property engine found at /system/bin/resetprop-rs"
+if [ -r /system/bin/resetprop-rs ] && [ -x /system/bin/linker64 ]; then
+  ui_print "- DevicePreset property engine found at /system/bin/resetprop-rs (via linker64)"
 else
-  ui_print "! /system/bin/resetprop-rs is missing or not executable; property application will be skipped"
+  ui_print "! resetprop-rs or /system/bin/linker64 is missing/unreadable; property application will be skipped"
 fi
 
 # check architecture
